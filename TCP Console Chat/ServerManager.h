@@ -3,6 +3,8 @@
 #define SERVER_MANAGER
 
 #include <WinSock2.h>
+#include <string>
+
 #define BUFFER_SIZE 2048
 class ServerManager
 {
@@ -15,6 +17,8 @@ private:
 	WSADATA wsaData;
 
 	void resetBuffer();
+
+	std::string getSocketIpAddress(sockaddr_storage socketAddress);
 
 public:
 	ServerManager();

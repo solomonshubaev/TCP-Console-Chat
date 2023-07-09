@@ -63,7 +63,7 @@ void runServerThread()
 void runClientThread()
 {
     cout << "Running client thread" << endl;
-    Client* client = new Client("Solo", 5400, "192.168.1.227");
+    Client* client = new Client("Solo", 5400, "172.20.10.3");
     client->init();
     client->connectToServer();
     delete client;

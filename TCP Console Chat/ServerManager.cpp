@@ -28,6 +28,19 @@ void ServerManager::resetBuffer()
 	memset(&this->buffer, 0, sizeof(this->buffer));
 }
 
+std::string ServerManager::getSocketIpAddress(sockaddr_storage socketAddress)
+{
+	char ipAddressString[INET_ADDRSTRLEN];
+	const sockaddr_in* incomingConnectionAddress = reinterpret_cast<const sockaddr_in*>(&socketAddress);
+	const char* result = inet_ntop(AF_INET, &(incomingConnectionAddress->sin_addr), ipAddressString, INET_ADDRSTRLEN);
+	if (result != nullptr)
+	{
+		return std::string(result);
+	}
+
+	return "";
+}
+
 void ServerManager::init()
 {
 	const int enableReuseAddr = ENABLE;
@@ -77,15 +90,19 @@ void ServerManager::start()
 	
 	try
 	{
+		sockaddr_storage incomingConnectionAddressStorage;
+		memset(&incomingConnectionAddressStorage, 0, sizeof(incomingConnectionAddressStorage));
+		int addressSize;
+		SOCKET incomingSocket;
 		while (true)
 		{
 			// Do it in another thread and another method of course
 			if (listen(this->serverSocket, 10) > -1)
 			{
 				// Declare all the variables outside of while loop!!!
-				sockaddr_storage incomingConnectionAddressStorage;
-				int addressSize = sizeof(incomingConnectionAddressStorage);
-				SOCKET incomingSocket = accept(this->serverSocket, (sockaddr*)&incomingConnectionAddressStorage, &addressSize);
+				
+				addressSize = sizeof(incomingConnectionAddressStorage);
+				incomingSocket = accept(this->serverSocket, (sockaddr*)&incomingConnectionAddressStorage, &addressSize);
 				if (incomingSocket < 0)
 				{
 					PrintUtils::printError("Error while accepting socket");
@@ -94,11 +111,7 @@ void ServerManager::start()
 				{
 					if (incomingConnectionAddressStorage.ss_family == AF_INET)
 					{
-						// Declare all the variables outside of while loop!!!
-						char ipAddressString[INET_ADDRSTRLEN];
-						const sockaddr_in* incomingConnectionAddress = reinterpret_cast<const sockaddr_in*>(&incomingConnectionAddressStorage);
-						const char* result = inet_ntop(AF_INET, &(incomingConnectionAddress->sin_addr), ipAddressString, INET_ADDRSTRLEN);
-						std::cout << "Accepting socket connection from IP address: " << result << std::endl;
+						std::cout << "Accepting socket connection from IP address: " << this->getSocketIpAddress(incomingConnectionAddressStorage) << std::endl;
 						
 						// TEST ONLY
 						int valread = recv(incomingSocket, this->buffer, sizeof(this->buffer) - 1, 0);
