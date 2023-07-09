@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="test">
+      <UniqueIdentifier>{91a9c651-5ee1-416c-9ad5-62259720fcc9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="src\server">
+      <UniqueIdentifier>{425ba082-34a4-4e2c-ad31-b3be1e6f6e4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\client">
+      <UniqueIdentifier>{db81dc88-7770-4475-8365-9cd8cb8b1bd9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\utils">
+      <UniqueIdentifier>{addaacdb-b4a7-428e-8580-4b5dc34b5da5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerExceptions.cpp">
+      <Filter>src\server</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerManager.cpp">
+      <Filter>src\server</Filter>
+    </ClCompile>
+    <ClCompile Include="Client.cpp">
+      <Filter>src\client</Filter>
+    </ClCompile>
+    <ClCompile Include="PrintUtils.cpp">
+      <Filter>src\utils</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ServerExceptions.h">
+      <Filter>src\server</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerManager.h">
+      <Filter>src\server</Filter>
+    </ClInclude>
+    <ClInclude Include="Client.h">
+      <Filter>src\client</Filter>
+    </ClInclude>
+    <ClInclude Include="PrintUtils.h">
+      <Filter>src\utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
