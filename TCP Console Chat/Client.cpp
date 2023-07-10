@@ -55,7 +55,7 @@ void Client::connectToServer()
 		{
 			throw std::exception("Failed to connect to server");
 		}
-
+		send(this->socketToServer, this->nickName.c_str(), this->nickName.length(), 0);
 		this->readThread = std::thread(&Client::readThreadMethod, this);
 		this->writeThread = std::thread(&Client::writeThreadMethod, this);
 		this->readThread.join();

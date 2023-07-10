@@ -92,8 +92,9 @@ void ServerManager::start()
 	{
 		sockaddr_storage incomingConnectionAddressStorage;
 		memset(&incomingConnectionAddressStorage, 0, sizeof(incomingConnectionAddressStorage));
-		int addressSize;
+		int addressSize, receivedBytes;
 		SOCKET incomingSocket;
+		char nickNameBuffer[36] = { 0 };
 		while (true)
 		{
 			// Do it in another thread and another method of course
@@ -112,8 +113,15 @@ void ServerManager::start()
 					if (incomingConnectionAddressStorage.ss_family == AF_INET)
 					{
 						std::cout << "Accepting socket connection from IP address: " << this->getSocketIpAddress(incomingConnectionAddressStorage) << std::endl;
-						// get nickName as an input
-						ClientConnection* clientConnection = new ClientConnection("Client", incomingSocket, this);
+						receivedBytes = recv(incomingSocket, nickNameBuffer, sizeof(nickNameBuffer) - 1, 0);
+						if (receivedBytes <= 0)
+						{
+							std::cerr << "Failed receive client's nick name" << std::endl;
+							continue;
+						}
+						std::cout << "*** " << nickNameBuffer << " has entered to chat ***" << std::endl;
+						ClientConnection* clientConnection = new ClientConnection(nickNameBuffer, incomingSocket, this);
+						memset(&nickNameBuffer, 0, sizeof(nickNameBuffer));
 						clientConnection->start();
 						this->clientConnections.push_back(clientConnection);
 					}

@@ -63,7 +63,10 @@ void runServerThread()
 void runClientThread()
 {
     cout << "Running client thread" << endl;
-    Client* client = new Client("Solo", 5400, "172.20.10.3");
+    std::cout << "Enter your nick name, keep it short: " << std::endl;
+    std::string nickName;
+    getline(cin, nickName);
+    Client* client = new Client(nickName, 5400, "172.20.10.3");
     client->init();
     client->connectToServer();
     delete client;
