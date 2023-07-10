@@ -19,14 +19,14 @@ ServerManager::ServerManager()
 
 ServerManager::~ServerManager()
 {
+	for (ClientConnection* clientConnection : this->clientConnections)
+	{
+		delete clientConnection;
+	}
 	closesocket(this->serverSocket);
 	WSACleanup();
 }
 
-void ServerManager::resetBuffer()
-{
-	memset(&this->buffer, 0, sizeof(this->buffer));
-}
 
 std::string ServerManager::getSocketIpAddress(sockaddr_storage socketAddress)
 {
@@ -112,17 +112,10 @@ void ServerManager::start()
 					if (incomingConnectionAddressStorage.ss_family == AF_INET)
 					{
 						std::cout << "Accepting socket connection from IP address: " << this->getSocketIpAddress(incomingConnectionAddressStorage) << std::endl;
-						
-						// TEST ONLY
-						int valread = recv(incomingSocket, this->buffer, sizeof(this->buffer) - 1, 0);
-						if (valread < 0)
-						{
-							PrintUtils::printError("Error while reading");
-						}
-						std::cout << "Bytes received: " << valread << std::endl;
-						printf("%s\n", this->buffer);
-						this->resetBuffer();
-						printf("After reset: %s\n", this->buffer);
+						// get nickName as an input
+						ClientConnection* clientConnection = new ClientConnection("Client", incomingSocket, this);
+						clientConnection->start();
+						this->clientConnections.push_back(clientConnection);
 					}
 					else
 					{
@@ -146,5 +139,32 @@ void ServerManager::start()
 	catch (const std::exception& ex)
 	{
 		PrintUtils::printError(ex.what());
+	}
+}
+
+
+void ServerManager::attach(ClientConnection* observer)
+{
+	this->clientConnections.push_back(observer);
+}
+
+void ServerManager::detach(ClientConnection* observer)
+{
+	auto iterator = std::find(this->clientConnections.begin(), this->clientConnections.end(), observer);
+	if (iterator != this->clientConnections.end())
+	{
+		this->clientConnections.erase(iterator);
+		delete observer; // Do I want to delete the pointer from here? Do I need?
+	}
+}
+
+void ServerManager::notify(std::string nickName, std::string message)
+{
+	for (ClientConnection* clientConnectionIterator : this->clientConnections)
+	{
+		if (clientConnectionIterator->getNickName() != nickName)
+		{
+			clientConnectionIterator->update(nickName + ": " + message);
+		}
 	}
 }
