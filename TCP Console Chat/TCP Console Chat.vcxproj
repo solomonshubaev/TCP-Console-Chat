@@ -129,6 +129,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp" />
+    <ClCompile Include="ClientConnection.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PrintUtils.cpp" />
     <ClCompile Include="ServerExceptions.cpp" />
@@ -136,6 +137,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h" />
+    <ClInclude Include="ClientConnection.h" />
     <ClInclude Include="PrintUtils.h" />
     <ClInclude Include="ServerExceptions.h" />
     <ClInclude Include="ServerManager.h" />

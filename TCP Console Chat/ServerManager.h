@@ -3,18 +3,22 @@
 #define SERVER_MANAGER
 
 #include <WinSock2.h>
-#define BUFFER_SIZE 2048
+#include <string>
+#include <vector>
+#include "ClientConnection.h"
+
 class ServerManager
 {
 private:
+	std::vector<ClientConnection*> clientConnections;
 	int maxClients;
 	int port;
-	char buffer[BUFFER_SIZE] = { 0 }; // important to reset!
 	SOCKET serverSocket;
 	sockaddr_in socketAddress;
 	WSADATA wsaData;
 
-	void resetBuffer();
+
+	std::string getSocketIpAddress(sockaddr_storage socketAddress);
 
 public:
 	ServerManager();
@@ -24,5 +28,11 @@ public:
 	void init();
 
 	void start(); // Start sever
+
+	void attach(ClientConnection* observer);
+
+	void detach(ClientConnection* observer);
+
+	void notify(std::string nickName, std::string message);
 };
 #endif // SERVER_MANAGER

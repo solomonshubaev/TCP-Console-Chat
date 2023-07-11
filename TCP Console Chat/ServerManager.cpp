@@ -19,13 +19,26 @@ ServerManager::ServerManager()
 
 ServerManager::~ServerManager()
 {
+	for (ClientConnection* clientConnection : this->clientConnections)
+	{
+		delete clientConnection;
+	}
 	closesocket(this->serverSocket);
 	WSACleanup();
 }
 
-void ServerManager::resetBuffer()
+
+std::string ServerManager::getSocketIpAddress(sockaddr_storage socketAddress)
 {
-	memset(&this->buffer, 0, sizeof(this->buffer));
+	char ipAddressString[INET_ADDRSTRLEN];
+	const sockaddr_in* incomingConnectionAddress = reinterpret_cast<const sockaddr_in*>(&socketAddress);
+	const char* result = inet_ntop(AF_INET, &(incomingConnectionAddress->sin_addr), ipAddressString, INET_ADDRSTRLEN);
+	if (result != nullptr)
+	{
+		return std::string(result);
+	}
+
+	return "";
 }
 
 void ServerManager::init()
@@ -77,15 +90,20 @@ void ServerManager::start()
 	
 	try
 	{
+		sockaddr_storage incomingConnectionAddressStorage;
+		memset(&incomingConnectionAddressStorage, 0, sizeof(incomingConnectionAddressStorage));
+		int addressSize, receivedBytes;
+		SOCKET incomingSocket;
+		char nickNameBuffer[36] = { 0 };
 		while (true)
 		{
 			// Do it in another thread and another method of course
 			if (listen(this->serverSocket, 10) > -1)
 			{
 				// Declare all the variables outside of while loop!!!
-				sockaddr_storage incomingConnectionAddressStorage;
-				int addressSize = sizeof(incomingConnectionAddressStorage);
-				SOCKET incomingSocket = accept(this->serverSocket, (sockaddr*)&incomingConnectionAddressStorage, &addressSize);
+				
+				addressSize = sizeof(incomingConnectionAddressStorage);
+				incomingSocket = accept(this->serverSocket, (sockaddr*)&incomingConnectionAddressStorage, &addressSize);
 				if (incomingSocket < 0)
 				{
 					PrintUtils::printError("Error while accepting socket");
@@ -94,22 +112,18 @@ void ServerManager::start()
 				{
 					if (incomingConnectionAddressStorage.ss_family == AF_INET)
 					{
-						// Declare all the variables outside of while loop!!!
-						char ipAddressString[INET_ADDRSTRLEN];
-						const sockaddr_in* incomingConnectionAddress = reinterpret_cast<const sockaddr_in*>(&incomingConnectionAddressStorage);
-						const char* result = inet_ntop(AF_INET, &(incomingConnectionAddress->sin_addr), ipAddressString, INET_ADDRSTRLEN);
-						std::cout << "Accepting socket connection from IP address: " << result << std::endl;
-						
-						// TEST ONLY
-						int valread = recv(incomingSocket, this->buffer, sizeof(this->buffer) - 1, 0);
-						if (valread < 0)
+						std::cout << "Accepting socket connection from IP address: " << this->getSocketIpAddress(incomingConnectionAddressStorage) << std::endl;
+						receivedBytes = recv(incomingSocket, nickNameBuffer, sizeof(nickNameBuffer) - 1, 0);
+						if (receivedBytes <= 0)
 						{
-							PrintUtils::printError("Error while reading");
+							std::cerr << "Failed receive client's nick name" << std::endl;
+							continue;
 						}
-						std::cout << "Bytes received: " << valread << std::endl;
-						printf("%s\n", this->buffer);
-						this->resetBuffer();
-						printf("After reset: %s\n", this->buffer);
+						std::cout << "*** " << nickNameBuffer << " has entered to chat ***" << std::endl;
+						ClientConnection* clientConnection = new ClientConnection(nickNameBuffer, incomingSocket, this);
+						memset(&nickNameBuffer, 0, sizeof(nickNameBuffer));
+						clientConnection->start();
+						this->clientConnections.push_back(clientConnection);
 					}
 					else
 					{
@@ -133,5 +147,32 @@ void ServerManager::start()
 	catch (const std::exception& ex)
 	{
 		PrintUtils::printError(ex.what());
+	}
+}
+
+
+void ServerManager::attach(ClientConnection* observer)
+{
+	this->clientConnections.push_back(observer);
+}
+
+void ServerManager::detach(ClientConnection* observer)
+{
+	auto iterator = std::find(this->clientConnections.begin(), this->clientConnections.end(), observer);
+	if (iterator != this->clientConnections.end())
+	{
+		this->clientConnections.erase(iterator);
+		delete observer; // Do I want to delete the pointer from here? Do I need?
+	}
+}
+
+void ServerManager::notify(std::string nickName, std::string message)
+{
+	for (ClientConnection* clientConnectionIterator : this->clientConnections)
+	{
+		if (clientConnectionIterator->getNickName() != nickName)
+		{
+			clientConnectionIterator->update(nickName + ": " + message);
+		}
 	}
 }
