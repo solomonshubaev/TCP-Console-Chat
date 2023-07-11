@@ -22,6 +22,7 @@ Client::~Client()
 
 void Client::init()
 {
+	std::cout << "Initializing server connection..." << std::endl;
 	try
 	{
 		if (WSAStartup(MAKEWORD(2, 2), &this->wsaData) != 0) {
@@ -49,12 +50,14 @@ void Client::init()
 
 void Client::connectToServer()
 {
+	std::cout << "Connecting to server..." << std::endl;
 	try
 	{
 		if (connect(this->socketToServer, (struct sockaddr*)&this->serverAddress, sizeof(this->serverAddress)) < 0)
 		{
 			throw std::exception("Failed to connect to server");
 		}
+		std::cout << "Connected to chat server" << std::endl;
 		send(this->socketToServer, this->nickName.c_str(), this->nickName.length(), 0);
 		this->readThread = std::thread(&Client::readThreadMethod, this);
 		this->writeThread = std::thread(&Client::writeThreadMethod, this);
