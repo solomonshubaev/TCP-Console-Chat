@@ -84,6 +84,7 @@ void ServerManager::init()
 
 void ServerManager::start()
 {
+	std::cout << "Starting server..." << std::endl;
 	const int enableReuseAddr = ENABLE;
 	if (this->serverSocket == INVALID_SOCKET)
 		throw GeneralServerException("Server socket is invalid");
@@ -98,10 +99,9 @@ void ServerManager::start()
 		while (true)
 		{
 			// Do it in another thread and another method of course
+			std::cout << "Listening for new connection" << std::endl;
 			if (listen(this->serverSocket, 10) > -1)
-			{
-				// Declare all the variables outside of while loop!!!
-				
+			{				
 				addressSize = sizeof(incomingConnectionAddressStorage);
 				incomingSocket = accept(this->serverSocket, (sockaddr*)&incomingConnectionAddressStorage, &addressSize);
 				if (incomingSocket < 0)

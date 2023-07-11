@@ -17,9 +17,6 @@ ClientConnection::ClientConnection(std::string nickName, SOCKET clientSocket, Se
 void ClientConnection::start()
 {
 	this->readThread = std::thread(&ClientConnection::readThreadMethod, this);
-	//this->writeThread = std::thread(&ClientConnection::writeThreadMethod, this);
-	this->readThread.join();
-	//this->writeThread.join();
 }
 
 
